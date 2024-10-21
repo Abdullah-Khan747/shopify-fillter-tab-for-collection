@@ -1,0 +1,319 @@
+// blog slider //
+
+
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-article-card.css' | asset_url | stylesheet_tag }}
+{{ 'section-featured-blog.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+     .section-{{ section.id }}-padding {
+       padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+       padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+     }
+
+     @media screen and (min-width: 750px) {
+       .section-{{ section.id }}-padding {
+         padding-top: {{ section.settings.padding_top }}px;
+         padding-bottom: {{ section.settings.padding_bottom }}px;
+       }
+     }
+
+     .slider {
+       overflow: hidden;
+       position: relative; /* Position relative to the buttons */
+     }
+
+     .articles-wrapper {
+       display: flex;
+       transition: transform 0.3s ease-in-out;
+     }
+
+     .blog__post {
+       flex: 0 0 calc(33.33% - 20px); /* Show 3 blog posts at a time with spacing */
+       margin-right: 20px; /* Space between blog posts */
+       box-sizing: border-box;
+     }
+
+     .blog__post:last-child {
+       margin-right: 0; /* Remove margin for the last item */
+     }
+
+     .slider-button {
+       background: transparent;
+       border: none;
+       z-index: 10; /* Ensure buttons are above other elements */
+     }
+     .blog-tittle-con{
+       display: flex;
+       flex-direction: column !important;
+       width: 24%;
+       justify-content: center;
+       align-items: start;
+     }
+     .blog-flex{
+       display: flex;
+     }
+     .slider-container{
+      width: 76%;
+     }
+    .blog-slider-btn{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+    .slider ul .article-card__excerpt{
+    display: none;
+    }
+    .slider ul .card__information{
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+    }
+    .underline-links-hover:hover a{
+      text-decoration: none !important;
+    }
+    .article-card .card__heading {
+      font-size: 1.6rem !important;
+      text-transform: uppercase !important;
+      font-weight: 600 !important;
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign posts_displayed = section.settings.blog.articles_count
+-%}
+<div class="blog color-{{ section.settings.color_scheme }} gradient{% if section.settings.heading == blank %} no-heading{% endif %}">
+  <div class="blog-flex page-width-desktop isolate{% if posts_displayed < 3 %} page-width-tablet{% endif %} section-{{ section.id }}-padding">
+    {%- unless section.settings.heading == blank -%}
+      <div class="blog-tittle-con title-wrapper-with-link{% if posts_displayed > 2 %} title-wrapper--self-padded-tablet-down{% else %} title-wrapper--self-padded-mobile{% endif %} title-wrapper--no-top-margin">
+        <h2
+          id="SectionHeading-{{ section.id }}"
+          class="blog__title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {% if settings.animations_reveal_on_scroll %}
+            data-cascade
+          {% endif %}
+        >
+          {{ section.settings.heading }}
+        </h2>
+
+        {%- if section.settings.show_view_all and section.settings.blog.articles_count > 1 -%}
+          <div
+            class="blog__view-all center small-hide medium-hide{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            {% if settings.animations_reveal_on_scroll %}
+              data-cascade
+            {% endif %}
+          >
+            <a
+              href="{{ section.settings.blog.url }}"
+              id="ViewAll-{{ section.id }}"
+              class="blog__button button"
+              aria-labelledby="ViewAll-{{ section.id }} SectionHeading-{{ section.id }}"
+            >
+              {{ 'sections.featured_blog.view_all' | t }}
+            </a>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endunless -%}
+
+    <div class="slider-container">
+      <div class="slider">
+        <ul
+          id="Slider-{{ section.id }}"
+          class="blog__posts articles-wrapper contains-card contains-card--article contains-card--standard"
+          role="list"
+        >
+          {%- if section.settings.blog != blank and section.settings.blog.articles_count > 0 -%}
+            {%- for article in section.settings.blog.articles -%}
+              <li
+                id="Slide-{{ section.id }}-{{ forloop.index }}"
+                class="blog__post grid__item article slider__slide slider__slide--full-width{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                {% if settings.animations_reveal_on_scroll %}
+                  data-cascade
+                  style="--animation-order: {{ forloop.index }};"
+                {% endif %}
+              >
+                {% render 'article-card',
+                  blog: section.settings.blog,
+                  article: article,
+                  media_aspect_ratio: 1.66,
+                  show_image: section.settings.show_image,
+                  show_date: section.settings.show_date,
+                  show_author: section.settings.show_author,
+                  show_excerpt: true
+                %}
+              </li>
+            {%- endfor -%}
+          {%- else -%}
+            <li class="blog__post grid__item article slider__slide slider__slide--full-width">
+              <p>No Articles Found</p>
+            </li>
+          {%- endif -%}
+        </ul>
+        <div class="blog-slider-btn">
+          <button class="slider-button slider-button--prev" aria-label="{{ 'general.slider.previous_slide' | t }}">
+            <span class="svg-wrapper">
+              {{- 'icon-caret.svg' | inline_asset_content -}}
+            </span>
+          </button>
+          <button class="slider-button slider-button--next" aria-label="{{ 'general.slider.next_slide' | t }}">
+            <span class="svg-wrapper">
+              {{- 'icon-caret.svg' | inline_asset_content -}}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const slider = document.querySelector('.articles-wrapper'); // The slider container
+    const prevButton = document.querySelector('.slider-button--prev'); // Previous button
+    const nextButton = document.querySelector('.slider-button--next'); // Next button
+    let currentIndex = 0; // Track the current index of the slider
+
+    // Function to calculate total slides dynamically
+    function getTotalSlides() {
+      return document.querySelectorAll('.blog__post').length; // Count all .blog__post elements (li)
+    }
+
+    // Update the slider position
+    function updateSliderPosition() {
+      const totalSlides = getTotalSlides(); // Get updated total number of slides (li elements)
+      const slidesToShow = 3; // Number of slides to show at once
+      const maxIndex = totalSlides - slidesToShow; // Maximum index based on total slides
+
+      // Calculate the offset for translation based on current index and number of slides to show
+      const offset = (currentIndex * (100 / slidesToShow)); 
+      slider.style.transform = `translateX(-${offset}%)`; // Move the slider by the calculated offset
+    }
+
+    // Show the previous slides
+    prevButton.addEventListener('click', function() {
+      const totalSlides = getTotalSlides(); // Get updated total number of slides
+      const slidesToShow = 3; // Number of slides to show at once
+      const maxIndex = totalSlides - slidesToShow; // Max index to prevent infinite loop
+
+      // Move to the previous slide or wrap around to the last one
+      currentIndex = (currentIndex > 0) ? currentIndex - 1 : maxIndex;
+      updateSliderPosition(); // Update the slider position
+    });
+
+    // Show the next slides
+    nextButton.addEventListener('click', function() {
+      const totalSlides = getTotalSlides(); // Get updated total number of slides
+      const slidesToShow = 3; // Number of slides to show at once
+      const maxIndex = totalSlides - slidesToShow; // Max index to prevent infinite loop
+
+      // Move to the next slide or wrap around to the first one
+      currentIndex = (currentIndex < maxIndex) ? currentIndex + 1 : 0;
+      updateSliderPosition(); // Update the slider position
+    });
+
+    // Initial position update when the page loads
+    updateSliderPosition();
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Featured Blog Section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "default": "Featured Blog",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h0",
+          "label": "H0"
+        }
+      ],
+      "default": "h1",
+      "label": "Heading Size"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Select Blog"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color Scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "default": true,
+      "label": "Show Image"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "default": true,
+      "label": "Show Date"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "default": false,
+      "label": "Show Author"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "default": true,
+      "label": "Show 'View All' Button"
+    },
+    {
+      "type": "header",
+      "content": "Padding Settings"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Blog",
+      "category": "Blog"
+    }
+  ]
+}
+{% endschema %}
