@@ -1,0 +1,193 @@
+<section>
+  <div class="ingredient-section page-width" style="text-align: left;">
+    {% if section.settings.section_heading %}
+      <h2>{{ section.settings.section_heading }}</h2>
+    {% endif %}
+
+    <div class="dropdown">
+      <label for="ingredientSelect"> </label>
+      <select id="ingredientSelect" class="ingredient-select">
+        <option value="all">All Ingredients</option>
+        {% for ingredient in section.blocks %}
+          <option value="{{ ingredient.settings.ingredient_name }}">{{ ingredient.settings.ingredient_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="grid-container page-width">
+    {% for ingredient in section.blocks %}
+      <div class="grid-item tab" id="tab-{{ ingredient.settings.ingredient_name }}" style="display: block;">
+        <div class="tab-content">
+          {% if ingredient.settings.image %}
+            <div class="image-overlay">
+              <img
+                src="{{ ingredient.settings.image | img_url: 'master' }}"
+                alt="{{ ingredient.settings.ingredient_name }}"
+              >
+              <div class="overlay">
+                <h3>{{ ingredient.settings.tab_heading }}</h3>
+                <p>{{ ingredient.settings.tab_subheading }}</p>
+                <a href="{{ ingredient.settings.read_more_link }}" class="read-more-button">Read More</a>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<style>
+  .ingredient-section {
+      margin-bottom: 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+  }
+
+    .dropdown {
+      margin-bottom: 20px;
+    }
+
+    .ingredient-select {
+      padding: 10px;
+      font-size: 16px;
+      width: 200px; /* Set width as per your layout */
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px; /* Space between grid items */
+      margin-top: 20px;
+    }
+
+    .grid-item {
+      display: none; /* Initially hide all grid items */
+    }
+
+    .tab-content {
+      position: relative;
+    }
+
+    .image-overlay {
+      position: relative;
+    }
+
+    .image-overlay img {
+      width: 100%;
+      height: auto;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5); /* Light black overlay */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .image-overlay:hover .overlay {
+      opacity: 1;
+    }
+
+    .read-more-button {
+      color: white;
+      background-color: #007BFF; /* Blue */
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+</style>
+
+<script>
+  const ingredientSelect = document.getElementById('ingredientSelect');
+  const tabs = document.querySelectorAll('.grid-item');
+
+  ingredientSelect.onchange = function() {
+    const ingredientName = this.value;
+
+    // Hide all tabs
+    tabs.forEach(tab => {
+      tab.style.display = 'none';
+    });
+
+    // Show the selected tab
+    if (ingredientName === "all") {
+      tabs.forEach(tab => {
+        tab.style.display = 'block'; // Show all tabs
+      });
+    } else {
+      const selectedTab = document.getElementById('tab-' + ingredientName);
+      if (selectedTab) {
+        selectedTab.style.display = 'block'; // Show the selected tab
+      }
+    }
+  };
+</script>
+
+{% schema %}
+{
+  "name": "Ingredients Section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "section_heading",
+      "label": "Section Heading",
+      "default": "Your Section Heading Here"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "ingredient",
+      "name": "Ingredient",
+      "settings": [
+        {
+          "type": "text",
+          "id": "ingredient_name",
+          "label": "Ingredient Name",
+          "default": "Ingredient 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Select Image"
+        },
+        {
+          "type": "text",
+          "id": "tab_heading",
+          "label": "Tab Heading",
+          "default": "Tab Heading"
+        },
+        {
+          "type": "text",
+          "id": "tab_subheading",
+          "label": "Tab Subheading",
+          "default": "Tab Subheading"
+        },
+        {
+          "type": "url",
+          "id": "read_more_link",
+          "label": "Read More Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Ingredients Section",
+      "category": "Custom Sections"
+    }
+  ]
+}
+{% endschema %}
